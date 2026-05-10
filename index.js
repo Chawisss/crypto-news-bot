@@ -1,22 +1,18 @@
+
 import axios from "axios";
+import Parser from "rss-parser";
+
+const parser = new Parser();
 
 const webhook = process.env.DISCORD_WEBHOOK_URL;
 const openrouter = process.env.OPENROUTER_API_KEY;
 
 async function getCryptoNews() {
-  const response = await axios.get(
-    "https://min-api.cryptocompare.com/data/v2/news/?lang=EN"
-  );
+  const feed = await parser.parseURL("https://cointelegraph.com/rss");
 
-  const articles = response.data.Data;
-
-  if (!Array.isArray(articles)) {
-    throw new Error("News API did not return an array");
-  }
-
-  return articles
+  return feed.items
     .slice(0, 5)
-    .map((n, i) => `${i + 1}. ${n.title}`)
+    .map((item, i) => `${i + 1}. ${item.title}`)
     .join("\n");
 }
 
@@ -24,12 +20,12 @@ async function summarize(newsText) {
   const response = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
-      model: "deepseek/deepseek-chat-v3-0324:free",
+      model: "google/gemma-3-27b-it:free",
       messages: [
         {
           role: "system",
           content:
-            "You are a crypto news analyst. Summarize briefly focusing only on important market-moving events about major cryptocurrencies. Exclude meme coins."
+            "Summarize these crypto news headlines briefly focusing on important market-moving developments involving major cryptocurrencies. Ignore meme coins."
         },
         {
           role: "user",
@@ -56,6 +52,9 @@ async function sendDiscord(message) {
 
 async function main() {
   const news = await getCryptoNews();
+
+  console.log(news);
+
   const summary = await summarize(news);
 
   await sendDiscord(summary);
