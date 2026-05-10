@@ -19,7 +19,7 @@ async function summarize(newsText) {
   const response = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
-      model: "meta-llama/llama-3.3-70b-instruct:free",
+      model: "openrouter/auto",
       messages: [
         {
           role: "system",
@@ -50,15 +50,17 @@ async function sendDiscord(message) {
 }
 
 async function main() {
-  const news = await getCryptoNews();
-
-  console.log(news);
-
-  const summary = await summarize(news);
-
-  await sendDiscord(summary);
-
-  console.log("sent");
+  try {
+    const news = await getCryptoNews();
+    console.log(news);
+    const summary = await summarize(news);
+    await sendDiscord(summary);
+    console.log("sent");
+  } catch (err) {
+    console.error(err);
+    await sendDiscord(
+      "⚠️ Failed to generate AI summary today, but the bot is still running.",
+    );
+  }
 }
-
 main();
