@@ -4,11 +4,18 @@ const webhook = process.env.DISCORD_WEBHOOK_URL;
 const openrouter = process.env.OPENROUTER_API_KEY;
 
 async function getCryptoNews() {
-  const news = await axios.get(
+  const response = await axios.get(
     "https://min-api.cryptocompare.com/data/v2/news/?lang=EN"
   );
 
-  return news.data.Data.slice(0, 5)
+  const articles = response.data.Data;
+
+  if (!Array.isArray(articles)) {
+    throw new Error("News API did not return an array");
+  }
+
+  return articles
+    .slice(0, 5)
     .map((n, i) => `${i + 1}. ${n.title}`)
     .join("\n");
 }
