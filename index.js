@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import Parser from "rss-parser";
 
@@ -20,25 +19,25 @@ async function summarize(newsText) {
   const response = await axios.post(
     "https://openrouter.ai/api/v1/chat/completions",
     {
-      model: "google/gemma-3-27b-it:free",
+      model: "meta-llama/llama-3.3-70b-instruct:free",
       messages: [
         {
           role: "system",
           content:
-            "Summarize these crypto news headlines briefly focusing on important market-moving developments involving major cryptocurrencies. Ignore meme coins."
+            "Summarize these crypto news headlines briefly focusing on important market-moving developments involving major cryptocurrencies. Ignore meme coins.",
         },
         {
           role: "user",
-          content: newsText
-        }
-      ]
+          content: newsText,
+        },
+      ],
     },
     {
       headers: {
         Authorization: `Bearer ${openrouter}`,
-        "Content-Type": "application/json"
-      }
-    }
+        "Content-Type": "application/json",
+      },
+    },
   );
 
   return response.data.choices[0].message.content;
@@ -46,7 +45,7 @@ async function summarize(newsText) {
 
 async function sendDiscord(message) {
   await axios.post(webhook, {
-    content: `## 📰 Daily Crypto News\n\n${message}`
+    content: `## 📰 Daily Crypto News\n\n${message}`,
   });
 }
 
